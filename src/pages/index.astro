@@ -1,0 +1,109 @@
+---
+import Layout from "../layouts/Layout.astro";
+import TVPreview from "../components/TVPreview.astro";
+---
+
+<Layout title="Bring your ministry home">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">
+        <span class="dot"></span> YOUR MINISTRY, ON THE BIG SCREEN
+      </p>
+      <h1>
+        More than a stream.
+        <br />
+        <em>A place to belong.</em>
+      </h1>
+      <p class="lede">
+        Bring your church into the living room. We help turn your livestream,
+        messages, and identity into a welcoming TV experience—managed by a team
+        that walks with you.
+      </p>
+      <div class="actions">
+        <a class="button" href="/start">
+          Tell us about your church <span>↗</span>
+        </a>
+        <a class="text-link" href="#how-it-works">
+          See how it works ↓
+        </a>
+      </div>
+      <p class="quiet">No technical expertise needed. No payment at intake.</p>
+    </div>
+    <div class="hero-visual">
+      <TVPreview />
+      <div class="visual-note">
+        <span>✦</span>
+        <p>
+          A familiar church.
+          <br />
+          <strong>A new way to gather.</strong>
+        </p>
+      </div>
+    </div>
+  </section>
+  <section id="platforms" class="platform-strip">
+    <p>ONE VISION. FOUR TV PLATFORMS.</p>
+    <div>
+      <span>Roku</span>
+      <span>
+        Google TV <small>/ Android TV</small>
+      </span>
+      <span>
+        SAMSUNG <small>Tizen</small>
+      </span>
+      <span>
+        LG <small>webOS</small>
+      </span>
+    </div>
+    <small>
+      Platform targets for our managed service. Compilation, device testing, and
+      store review are separate steps; approval is never guaranteed.
+    </small>
+  </section>
+  <section id="how-it-works" class="section">
+    <div class="section-heading">
+      <p class="eyebrow">A THOUGHTFUL PROCESS</p>
+      <h2>
+        You focus on your people.
+        <br />
+        We’ll guide the next steps.
+      </h2>
+    </div>
+    <div class="cards">
+      <article>
+        <span class="step-number">01 / SHARE</span>
+        <h3>Start with your story</h3>
+        <p>
+          Tell us about your church, share your stream, and bring your logo and
+          colors. One simple intake, all in one place.
+        </p>
+      </article>
+      <article>
+        <span class="step-number">02 / SHAPE</span>
+        <h3>A team, on your side</h3>
+        <p>
+          Our staff review your materials, request anything missing, and help
+          define your church’s TV experience.
+        </p>
+      </article>
+      <article>
+        <span class="step-number">03 / PREPARE</span>
+        <h3>A careful path to TV</h3>
+        <p>
+          Real platform builds, device QA, and publishing will follow. Your
+          church owns its publisher accounts; each store makes its own decision.
+        </p>
+      </article>
+    </div>
+  </section>
+  <section class="closing">
+    <div>
+      <p class="eyebrow">LET’S BEGIN WITH A CONVERSATION</p>
+      <h2>Make room for your ministry.</h2>
+      <p>Share your vision. We’ll take a look together.</p>
+    </div>
+    <a class="button light" href="/start">
+      Start your church intake ↗
+    </a>
+  </section>
+</Layout>

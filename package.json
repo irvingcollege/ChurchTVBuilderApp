@@ -1,0 +1,46 @@
+{
+  "name": "church-tv-builder",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "dev": "astro dev --host 0.0.0.0",
+    "build": "astro build",
+    "preview": "astro preview --host 0.0.0.0",
+    "typecheck": "astro check",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build",
+    "test:e2e": "playwright test",
+    "test:live": "LOCAL_SUPABASE_E2E=1 playwright test tests/browser/live.spec.ts",
+    "format": "prettier --write .",
+    "bootstrap:staff": "node --env-file=.env scripts/bootstrap-staff.mjs",
+    "setup:local-env": "node scripts/local-env.mjs"
+  },
+  "dependencies": {
+    "@astrojs/netlify": "^8.2.10",
+    "@supabase/supabase-js": "^2.118.0",
+    "astro": "^7.4.1",
+    "ipaddr.js": "^2.5.0",
+    "sharp": "^0.35.5",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.11",
+    "@electric-sql/pglite": "^0.5.10",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.5",
+    "eslint": "^10.13.0",
+    "prettier": "^3.9.10",
+    "prettier-plugin-astro": "^1.1.1",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.72.0",
+    "vitest": "^5.0.5"
+  },
+  "overrides": {
+    "sharp": "$sharp"
+  }
+}

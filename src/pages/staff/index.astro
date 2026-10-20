@@ -1,0 +1,106 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { staff, HttpError } from "../../lib/server/http";
+import { checked } from "../../lib/server/db";
+let rows: any[] = [];
+let error = "";
+try {
+  const { db } = await staff(Astro);
+  rows =
+    checked(
+      await db
+        .from("submissions")
+        .select("id,status,created_at,churches(display_name,contact_email)")
+        .order("created_at", { ascending: false })
+        .limit(200),
+    ) || [];
+} catch (e) {
+  if (e instanceof HttpError && e.status === 401)
+    return Astro.redirect("/staff/login");
+  error =
+    e instanceof Error && e.message === "SETUP_REQUIRED"
+      ? "Supabase is not configured. Follow the README to connect your database."
+      : "Access denied or database unavailable. Ask your administrator to verify staff access and migrations.";
+  Astro.response.status = 503;
+}
+---
+
+<Layout title="Staff submissions">
+  <div class="page">
+    <div class="row">
+      <div>
+        <p class="eyebrow">STAFF WORKSPACE</p>
+        <h1>Church submissions</h1>
+      </div>
+      <button id="logout" class="secondary">
+        Sign out
+      </button>
+    </div>
+    <p>
+      Review materials, keep a clear history, and guide each church through the
+      process.
+    </p>
+    {error ? (
+      <div class="message error">{error}</div>
+    ) : (
+      <div class="panel">
+        <label>
+          Find a church
+          <input id="filter" placeholder="Search name, contact, or status" />
+        </label>
+        <p class="quiet">
+          Showing the latest {rows.length} submissions (up to 200).
+        </p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Church</th>
+                <th>Contact</th>
+                <th>Status</th>
+                <th>Received</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr data-search>
+                  <td>
+                    <a href={`/staff/${r.id}`}>{r.churches?.display_name}</a>
+                  </td>
+                  <td>{r.churches?.contact_email}</td>
+                  <td>
+                    <span class="badge">{r.status}</span>
+                  </td>
+                  <td>
+                    {new Date(r.created_at).toLocaleDateString("en-US", {
+                      timeZone: "UTC",
+                    })}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {!rows.length && (
+          <p>No submissions yet. New inquiries will appear here.</p>
+        )}
+      </div>
+    )}
+    <p class="quiet">
+      Dates shown in UTC. Internal staff access is enforced by Supabase Auth and
+      database policies.
+    </p>
+  </div>
+</Layout>
+<script>
+  document.querySelector("#filter")?.addEventListener("input", (e) => {
+    const q = (e.target as HTMLInputElement).value.toLowerCase();
+    document
+      .querySelectorAll<HTMLTableRowElement>("[data-search]")
+      .forEach((r) => (r.hidden = !r.textContent?.toLowerCase().includes(q)));
+  });
+  document.querySelector("#logout")?.addEventListener("click", async () => {
+    await fetch("/api/logout", { method: "POST" });
+    location.assign("/staff/login");
+  });
+</script>

@@ -1,0 +1,394 @@
+---
+import Layout from "../layouts/Layout.astro";
+import TVPreview from "../components/TVPreview.astro";
+---
+
+<Layout title="Church intake">
+  <div class="page narrow">
+    <a class="text-link" href="/">
+      ← Back to Church TV
+    </a>
+    <p class="eyebrow">LET’S GET TO KNOW YOUR CHURCH</p>
+    <h1>A new way to welcome people.</h1>
+    <p class="lede">
+      Share your church’s details and materials. Our staff will review them and
+      contact you about next steps. This does not generate or publish an app.
+    </p>
+    <p class="quiet">
+      Submit once when you’re ready. For your privacy, unfinished forms are not
+      saved. Required fields are marked *.
+    </p>
+    <div class="step-indicator" aria-label="Intake progress">
+      <span class="active">01 Church</span>
+      <span>02 Content</span>
+      <span>03 Branding</span>
+      <span>04 Review</span>
+    </div>
+    <form id="intake" class="panel">
+      <div class="honeypot" aria-hidden="true">
+        <label>
+          Company
+          <input name="company" tabindex="-1" autocomplete="off" />
+        </label>
+      </div>
+      <section data-step="0">
+        <h2>Your church</h2>
+        <div class="grid">
+          <label>
+            Legal church name *
+            <input
+              name="legalName"
+              required
+              minlength="2"
+              maxlength="180"
+              autocomplete="organization"
+            />
+          </label>
+          <label>
+            Display name *
+            <input name="displayName" required minlength="2" maxlength="100" />
+          </label>
+          <label>
+            Contact name *
+            <input
+              name="contactName"
+              required
+              minlength="2"
+              maxlength="120"
+              autocomplete="name"
+            />
+          </label>
+          <label>
+            Contact email *
+            <input
+              type="email"
+              name="contactEmail"
+              required
+              maxlength="254"
+              autocomplete="email"
+            />
+          </label>
+        </div>
+        <label>
+          About your church *
+          <textarea
+            name="description"
+            required
+            minlength="10"
+            maxlength="2000"
+          ></textarea>
+        </label>
+        <label>
+          Church website
+          <input
+            type="url"
+            name="website"
+            maxlength="2048"
+            placeholder="https://yourchurch.org"
+          />
+        </label>
+        <label>
+          Social links (one per line, up to 6)
+          <textarea
+            name="socialLinks"
+            placeholder="https://…"
+            maxlength="12300"
+          ></textarea>
+          <small>Use public HTTPS URLs for all links.</small>
+        </label>
+      </section>
+      <section data-step="1" hidden>
+        <h2>Your services & content</h2>
+        <label>
+          Service schedule *
+          <textarea
+            name="serviceSchedule"
+            required
+            minlength="3"
+            maxlength="600"
+            placeholder="Sundays at 10:00 AM; Wednesdays at 7:00 PM"
+          ></textarea>
+        </label>
+        <label>
+          Timezone *
+          <input
+            name="timezone"
+            value="America/Chicago"
+            required
+            maxlength="80"
+          />
+          <small>
+            Use an IANA timezone, such as America/Chicago or Europe/London.
+          </small>
+        </label>
+        <label>
+          HLS livestream URL *
+          <input
+            type="url"
+            name="livestreamUrl"
+            required
+            maxlength="2048"
+            placeholder="https://stream.example.org/live.m3u8"
+          />
+          <small>
+            Provide the HLS manifest, not a YouTube page or embed. Staff will
+            review playback compatibility separately.
+          </small>
+        </label>
+        <label>
+          Archive catalog URL (optional)
+          <input
+            type="url"
+            name="archiveUrl"
+            maxlength="2048"
+            placeholder="https://yourchurch.org/catalog.json"
+          />
+        </label>
+        <p class="quiet">
+          Your URLs will not be loaded in this browser. Do not include access
+          tokens, passwords, or publisher credentials.
+        </p>
+      </section>
+      <section data-step="2" hidden>
+        <h2>Make it feel like home</h2>
+        <label>
+          Desired app name *
+          <input name="appName" required minlength="2" maxlength="50" />
+        </label>
+        <div class="grid">
+          <label>
+            Primary color *
+            <input name="primaryColor" type="color" value="#c8e5b3" />
+          </label>
+          <label>
+            Background color *
+            <input name="backgroundColor" type="color" value="#152a28" />
+          </label>
+        </div>
+        <div class="grid">
+          <label>
+            Church logo (optional)
+            <input name="logo" type="file" accept="image/png,image/jpeg" />
+            <small>PNG or JPEG, at most 2 MiB. No SVG.</small>
+          </label>
+          <label>
+            Banner image (optional)
+            <input name="banner" type="file" accept="image/png,image/jpeg" />
+            <small>PNG or JPEG, at most 2 MiB. No SVG.</small>
+          </label>
+        </div>
+        <fieldset>
+          <legend>Requested platforms *</legend>
+          <label class="check">
+            <input type="checkbox" name="platforms" value="roku" checked />
+            Roku
+          </label>
+          <label class="check">
+            <input type="checkbox" name="platforms" value="androidtv" />
+            Google / Android TV
+          </label>
+          <label class="check">
+            <input type="checkbox" name="platforms" value="samsung" />
+            Samsung Tizen
+          </label>
+          <label class="check">
+            <input type="checkbox" name="platforms" value="lg" />
+            LG webOS
+          </label>
+        </fieldset>
+        <h3>Branding preview</h3>
+        <TVPreview />
+        <p class="quiet">
+          Illustration only. Images, navigation, stream playback, and platform
+          packaging are not part of this preview.
+        </p>
+      </section>
+      <section data-step="3" hidden>
+        <h2>Review & send</h2>
+        <p>Please review the summary below. Use Back to make changes.</p>
+        <pre id="review-summary"></pre>
+        <label class="check">
+          <input type="checkbox" name="contentRights" required />I confirm our
+          church has the rights to distribute the submitted content, including
+          music, artwork, recordings, and branding. *
+        </label>
+        <label class="check">
+          <input type="checkbox" name="consent" required />I consent to this
+          team storing our submitted information and materials privately, and
+          contacting us about our TV app inquiry. I understand that submission
+          does not guarantee app store approval or publication. *
+        </label>
+        <p class="quiet">
+          Please do not submit confidential pastoral information, payment
+          details, or signing credentials. Contact the team to request
+          correction or deletion of your submission.
+        </p>
+      </section>
+      <div class="form-actions">
+        <button type="button" id="back" class="secondary" hidden>
+          ← Back
+        </button>
+        <button type="button" id="next">
+          Continue →
+        </button>
+        <button type="submit" id="send" hidden>
+          Send for staff review ↗
+        </button>
+      </div>
+      <div class="message" role="status" aria-live="polite" id="result"></div>
+    </form>
+    <noscript>
+      This form requires JavaScript. Enable it to continue; no data has been
+      submitted.
+    </noscript>
+  </div>
+</Layout>
+<script>
+  import { churchConfigSchema } from "../lib/config";
+  const form = document.querySelector<HTMLFormElement>("#intake")!;
+  const sections = [...form.querySelectorAll<HTMLElement>("[data-step]")];
+  const back = document.querySelector<HTMLButtonElement>("#back")!;
+  const next = document.querySelector<HTMLButtonElement>("#next")!;
+  const send = document.querySelector<HTMLButtonElement>("#send")!;
+  const result = document.querySelector<HTMLElement>("#result")!;
+  let step = 0;
+  function config() {
+    const f = new FormData(form);
+    const get = (key: string) => String(f.get(key) || "");
+    return {
+      schemaVersion: 1,
+      legalName: get("legalName"),
+      displayName: get("displayName"),
+      contactName: get("contactName"),
+      contactEmail: get("contactEmail"),
+      website: get("website"),
+      description: get("description"),
+      socialLinks: get("socialLinks")
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      serviceSchedule: get("serviceSchedule"),
+      timezone: get("timezone"),
+      livestreamUrl: get("livestreamUrl"),
+      archiveUrl: get("archiveUrl"),
+      appName: get("appName"),
+      primaryColor: get("primaryColor"),
+      backgroundColor: get("backgroundColor"),
+      platforms: f.getAll("platforms"),
+      contentRights: f.get("contentRights") === "on",
+      consent: f.get("consent") === "on",
+    };
+  }
+  function show() {
+    sections.forEach((s, i) => (s.hidden = i !== step));
+    back.hidden = step === 0;
+    next.hidden = step === 3;
+    send.hidden = step !== 3;
+    document
+      .querySelectorAll(".step-indicator span")
+      .forEach((s, i) => s.classList.toggle("active", i === step));
+    result.textContent = "";
+    if (step === 3)
+      document.querySelector("#review-summary")!.textContent = JSON.stringify(
+        config(),
+        null,
+        2,
+      );
+    sections[step].querySelector("h2")?.scrollIntoView({ block: "nearest" });
+  }
+  function validStep() {
+    for (const input of sections[step].querySelectorAll<
+      HTMLInputElement | HTMLTextAreaElement
+    >("input, textarea")) {
+      if (!input.reportValidity()) return false;
+      if (
+        input.type === "file" &&
+        (input as HTMLInputElement).files?.[0] &&
+        (input as HTMLInputElement).files![0].size > 2 * 1024 * 1024
+      ) {
+        result.textContent = "Images must be at most 2 MiB.";
+        return false;
+      }
+    }
+    if (step === 2 && !form.querySelector("input[name=platforms]:checked")) {
+      result.textContent = "Select at least one platform.";
+      return false;
+    }
+    return true;
+  }
+  next.addEventListener("click", () => {
+    if (validStep()) {
+      step++;
+      show();
+    }
+  });
+  back.addEventListener("click", () => {
+    step--;
+    show();
+  });
+  form.addEventListener("input", () => {
+    const c = config();
+    document
+      .querySelectorAll("[data-preview-name],[data-preview-title]")
+      .forEach((el) => (el.textContent = c.appName || "Your church, at home."));
+    const tv = document.querySelector<HTMLElement>(".tv");
+    tv?.style.setProperty("--tv-primary", c.primaryColor);
+    tv?.style.setProperty("--tv-bg", c.backgroundColor);
+  });
+  // Validate manually so hidden required fields can be revealed before browser focus.
+  form.noValidate = true;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (step !== 3) {
+      if (validStep()) {
+        step++;
+        show();
+      }
+      return;
+    }
+    const parsed = churchConfigSchema.safeParse(config());
+    if (!parsed.success) {
+      result.classList.add("error");
+      result.textContent =
+        parsed.error.issues
+          .map((i) => `${i.path.join(".")}: ${i.message}`)
+          .join("\n") + "\nUse Back to correct the fields.";
+      return;
+    }
+    if (!validStep()) return;
+    send.disabled = true;
+    back.disabled = true;
+    result.classList.remove("error");
+    result.textContent = "Sending securely…";
+    try {
+      const payload = new FormData(form);
+      payload.set("config", JSON.stringify(parsed.data));
+      const response = await fetch("/api/intake", {
+        method: "POST",
+        body: payload,
+      });
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error([data.error, ...(data.issues || [])].join("\n"));
+      form.replaceChildren(
+        Object.assign(document.createElement("h2"), {
+          textContent: "Thank you. Your story starts here.",
+        }),
+        Object.assign(document.createElement("p"), {
+          textContent: data.message,
+        }),
+        Object.assign(document.createElement("p"), {
+          textContent: `Your reference: ${data.id}. Keep this for future correspondence.`,
+        }),
+      );
+    } catch (error) {
+      result.classList.add("error");
+      result.textContent =
+        error instanceof Error
+          ? error.message
+          : "Unable to submit. Please try again.";
+      send.disabled = false;
+      back.disabled = false;
+    }
+  });
+</script>

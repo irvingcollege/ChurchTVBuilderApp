@@ -1,0 +1,58 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Staff sign in">
+  <div class="page narrow">
+    <p class="eyebrow">INTERNAL WORKSPACE</p>
+    <h1>Welcome back.</h1>
+    <p>
+      Sign in with your allowlisted staff account. Church intake does not
+      require an account.
+    </p>
+    <form id="login" class="panel">
+      <label>
+        Email
+        <input name="email" type="email" required autocomplete="username" />
+      </label>
+      <label>
+        Password
+        <input
+          name="password"
+          type="password"
+          required
+          autocomplete="current-password"
+        />
+      </label>
+      <button>Sign in →</button>
+      <div id="message" class="message" role="status"></div>
+    </form>
+    <p class="quiet">
+      Sessions expire automatically. Contact your administrator to reset a
+      password or request staff access. Public sign-up does not grant access.
+    </p>
+  </div>
+</Layout>
+<script>
+  const f = document.querySelector<HTMLFormElement>("#login")!;
+  f.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = document.querySelector("#message")!;
+    const b = f.querySelector("button")!;
+    b.disabled = true;
+    try {
+      const data = new FormData(f);
+      const r = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(data)),
+      });
+      const body = await r.json();
+      if (!r.ok) throw new Error(body.error);
+      location.assign("/staff");
+    } catch (e) {
+      msg.textContent = e instanceof Error ? e.message : "Sign-in failed";
+      b.disabled = false;
+    }
+  });
+</script>

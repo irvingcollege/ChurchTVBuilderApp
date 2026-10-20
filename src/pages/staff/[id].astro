@@ -1,0 +1,400 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import TVPreview from "../../components/TVPreview.astro";
+import { staff, HttpError } from "../../lib/server/http";
+import { checked } from "../../lib/server/db";
+import {
+  churchConfigSchema,
+  transitions,
+  type Status,
+  platforms,
+} from "../../lib/config";
+import { z } from "zod";
+let detail: any = null;
+let church: any;
+let config: any;
+let notes: any[] = [];
+let history: any[] = [];
+let assets: any[] = [];
+let jobs: any[] = [];
+let notifications: any[] = [];
+let audit: any[] = [];
+let error = "";
+try {
+  const { db } = await staff(Astro);
+  const id = z.string().uuid().parse(Astro.params.id);
+  detail = checked(
+    await db.from("submissions").select("*").eq("id", id).single(),
+  );
+  const results = await Promise.all([
+    db.from("churches").select("*").eq("id", detail.church_id).single(),
+    db
+      .from("church_configs")
+      .select("*")
+      .eq("church_id", detail.church_id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single(),
+    db
+      .from("staff_notes")
+      .select("*")
+      .eq("submission_id", id)
+      .order("created_at"),
+    db
+      .from("submission_status_events")
+      .select("*")
+      .eq("submission_id", id)
+      .order("created_at"),
+    db.from("assets").select("*").eq("church_id", detail.church_id),
+    db
+      .from("build_jobs")
+      .select("*")
+      .eq("church_id", detail.church_id)
+      .order("created_at", { ascending: false }),
+    db
+      .from("notifications")
+      .select("*")
+      .eq("submission_id", id)
+      .order("created_at", { ascending: false }),
+    db
+      .from("audit_log")
+      .select("*")
+      .eq("entity_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
+  [church, config, notes, history, assets, jobs, notifications, audit] =
+    results.map((r) => checked(r));
+  config.config_json = churchConfigSchema.parse(config.config_json);
+} catch (e) {
+  if (e instanceof HttpError && e.status === 401)
+    return Astro.redirect("/staff/login");
+  error =
+    "Unable to load submission. Check the reference, staff access, and database setup.";
+  Astro.response.status = 404;
+}
+const c = config?.config_json;
+---
+
+<Layout title={church?.display_name || "Submission"}>
+  <div class="page">
+    <a class="text-link" href="/staff">
+      ← All submissions
+    </a>
+    {error ? (
+      <div class="message error">{error}</div>
+    ) : (
+      <>
+        <div class="row">
+          <div>
+            <p class="eyebrow">CHURCH REVIEW · {church.slug}</p>
+            <h1>{church.display_name}</h1>
+          </div>
+          <span class="badge">{detail.status}</span>
+        </div>
+        <p class="quiet">
+          Tenant {church.id} · Submitted {detail.created_at} · All timestamps
+          UTC
+        </p>
+        <div id="action-result" class="message" role="status"></div>
+        <div class="details-grid">
+          <div>
+            <section class="panel">
+              <h2>Church & content</h2>
+              <dl>
+                <dt>Legal name</dt>
+                <dd>{church.legal_name}</dd>
+                <dt>Contact</dt>
+                <dd>
+                  {c.contactName} · {church.contact_email}
+                </dd>
+                <dt>Description</dt>
+                <dd>{church.description}</dd>
+                <dt>Schedule</dt>
+                <dd>
+                  {c.serviceSchedule} ({c.timezone})
+                </dd>
+                <dt>Website</dt>
+                <dd>{c.website || "Not provided"}</dd>
+                <dt>Social links</dt>
+                <dd>{c.socialLinks.join("\n") || "None"}</dd>
+                <dt>HLS stream</dt>
+                <dd>{c.livestreamUrl}</dd>
+                <dt>Archive</dt>
+                <dd>{c.archiveUrl || "Not provided"}</dd>
+                <dt>Platforms</dt>
+                <dd>{c.platforms.join(", ")}</dd>
+                <dt>Rights & consent</dt>
+                <dd>Both affirmed at submission</dd>
+              </dl>
+              <p class="quiet">
+                External URLs are displayed as text and are never embedded or
+                executed.
+              </p>
+              <button
+                id="preflight"
+                data-url={c.livestreamUrl}
+                class="secondary"
+              >
+                Check stream URL syntax
+              </button>
+              <pre id="preflight-result" hidden></pre>
+            </section>
+            <section class="panel">
+              <h2>Private materials</h2>
+              {assets.length ? (
+                assets.map((a) => (
+                  <p>
+                    <button class="secondary" data-asset={a.id}>
+                      View {a.kind}
+                    </button>{" "}
+                    <small>
+                      {a.mime_type} · {Math.ceil(a.size_bytes / 1024)} KiB
+                    </small>
+                  </p>
+                ))
+              ) : (
+                <p>No images submitted.</p>
+              )}
+              <div id="asset-output"></div>
+              <p class="quiet">
+                Signed access expires in 60 seconds. Images are not public.
+              </p>
+            </section>
+            <section class="panel">
+              <h2>Normalized config v{c.schemaVersion}</h2>
+              <details>
+                <summary>View versioned ChurchConfig</summary>
+                <pre>{JSON.stringify(c,null,2)}</pre>
+              </details>
+              <TVPreview
+                name={c.appName}
+                primary={c.primaryColor}
+                background={c.backgroundColor}
+                schedule={c.serviceSchedule}
+              />
+            </section>
+            <section class="panel">
+              <h2>Status history</h2>
+              <ol class="history">
+                {history.map((h) => (
+                  <li>
+                    <strong>
+                      {h.from_status || "new"} → {h.to_status}
+                    </strong>
+                    <p>{h.note}</p>
+                    <small>
+                      {h.created_at} · Actor: {h.actor_id || "public intake"}
+                    </small>
+                  </li>
+                ))}
+              </ol>
+            </section>
+            <section class="panel">
+              <h2>Audit log</h2>
+              <ol class="history">
+                {audit.map((a) => (
+                  <li>
+                    {a.action}
+                    <small>
+                      {a.created_at} · {a.actor_id || "public intake"}
+                    </small>
+                  </li>
+                ))}
+              </ol>
+              <p class="quiet">
+                Build actions are also recorded in the database audit log under
+                the job ID.
+              </p>
+            </section>
+          </div>
+          <div>
+            <section class="panel">
+              <h2>Move the review forward</h2>
+              <form data-action="status" data-id={detail.id}>
+                <input type="hidden" name="expected" value={detail.status} />
+                <label>
+                  Next status
+                  <select name="target" required>
+                    {transitions[detail.status as Status].map((s) => (
+                      <option value={s}>{s}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Reason / context
+                  <textarea name="note" required maxlength="4000"></textarea>
+                </label>
+                <button disabled={!transitions[detail.status as Status].length}>
+                  Save status
+                </button>
+              </form>
+              <p class="quiet">
+                QA and publishing require a real compiled artifact. Published
+                also requires a verified store record. Dry runs cannot unlock
+                these states.
+              </p>
+            </section>
+            <section class="panel">
+              <h2>Staff notes</h2>
+              {notes.map((n) => (
+                <div>
+                  <p>{n.body}</p>
+                  <p class="quiet">
+                    {n.created_at} · {n.actor_id}
+                  </p>
+                  <hr />
+                </div>
+              ))}
+              <form data-action="note" data-id={detail.id}>
+                <label>
+                  Add an internal note
+                  <textarea name="note" required maxlength="4000"></textarea>
+                </label>
+                <button>Add note</button>
+              </form>
+            </section>
+            <section class="panel">
+              <h2>Request materials</h2>
+              <p class="quiet">
+                Development mode records a simulation. Production uses the
+                configured email provider. This does not automatically change
+                submission status.
+              </p>
+              <form data-action="notify" data-id={detail.id}>
+                <label>
+                  Message to {church.contact_email}
+                  <textarea
+                    name="note"
+                    required
+                    maxlength="4000"
+                    placeholder="Please send the missing materials by replying to our team’s email…"
+                  ></textarea>
+                </label>
+                <button>Request missing materials</button>
+              </form>
+              {notifications.map((n) => (
+                <div>
+                  <span class="badge">{n.state}</span>
+                  <p>{n.body}</p>
+                  <small>
+                    {n.created_at} · {n.actor_id}
+                  </small>
+                </div>
+              ))}
+            </section>
+            <section class="panel">
+              <h2>Build jobs</h2>
+              <p>
+                <strong>Dry-run adapters only.</strong> These simulations
+                validate config and record a failed build because native
+                toolchains are not installed. No packages or downloads are
+                produced.
+              </p>
+              <form data-action="build" data-id={detail.id}>
+                <label>
+                  Platform
+                  <select name="platform">
+                    {platforms.map((p) => (
+                      <option value={p}>{p}</option>
+                    ))}
+                  </select>
+                </label>
+                <button>Run simulation</button>
+              </form>
+              {jobs.map((j) => (
+                <div class="panel">
+                  <span class="badge">
+                    {j.status} · {j.platform}
+                  </span>
+                  <p>{j.error || "Simulation queued"}</p>
+                  <small>
+                    {j.created_at} · Config {j.config_version}
+                  </small>
+                </div>
+              ))}
+            </section>
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+</Layout>
+<script>
+  async function post(path: string, data: unknown) {
+    const r = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const body = await r.json();
+    if (!r.ok) throw new Error(body.error);
+    return body;
+  }
+  const output = document.querySelector<HTMLElement>("#action-result");
+  document.querySelectorAll<HTMLFormElement>("form[data-action]").forEach((f) =>
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const button = f.querySelector("button")!;
+      button.disabled = true;
+      try {
+        const result = await post("/api/staff/action", {
+          ...Object.fromEntries(new FormData(f)),
+          action: f.dataset.action,
+          id: f.dataset.id,
+        });
+        sessionStorage.setItem("staff-result", result.message);
+        location.reload();
+      } catch (e) {
+        if (output) {
+          output.classList.add("error");
+          output.textContent = e instanceof Error ? e.message : "Action failed";
+          output.scrollIntoView();
+        }
+        button.disabled = false;
+      }
+    }),
+  );
+  const previous = sessionStorage.getItem("staff-result");
+  if (previous && output) {
+    output.textContent = previous;
+    sessionStorage.removeItem("staff-result");
+  }
+  document
+    .querySelector<HTMLButtonElement>("#preflight")
+    ?.addEventListener("click", async (e) => {
+      const pre = document.querySelector<HTMLElement>("#preflight-result")!;
+      pre.hidden = false;
+      try {
+        pre.textContent = JSON.stringify(
+          await post("/api/staff/preflight", {
+            url: (e.currentTarget as HTMLElement).dataset.url,
+          }),
+          null,
+          2,
+        );
+      } catch (e) {
+        pre.textContent = e instanceof Error ? e.message : "Check failed";
+      }
+    });
+  document.querySelectorAll<HTMLButtonElement>("[data-asset]").forEach((b) =>
+    b.addEventListener("click", async () => {
+      const out = document.querySelector("#asset-output")!;
+      try {
+        const image = await fetch(
+          `/api/staff/image?id=${encodeURIComponent(b.dataset.asset!)}`,
+        );
+        if (!image.ok)
+          throw new Error("Signed link expired or storage unavailable");
+        const url = URL.createObjectURL(await image.blob());
+        const img = document.createElement("img");
+        img.alt = "Submitted church branding material";
+        img.onload = () => URL.revokeObjectURL(url);
+        img.src = url;
+        out.replaceChildren(img);
+      } catch (e) {
+        out.textContent =
+          e instanceof Error ? e.message : "Unable to load material";
+      }
+    }),
+  );
+</script>

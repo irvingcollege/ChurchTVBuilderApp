@@ -1,0 +1,44 @@
+---
+import "../styles/global.css";
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A managed path from your church livestream to the living room. Church TV app intake and staff review."
+    />
+    <title>{title} · Church TV</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="/">
+        <span class="brand-icon">✦</span> Church TV
+        <span class="brand-tag">BUILDER</span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="/#how-it-works">How it works</a>
+        <a href="/#platforms">Platforms</a>
+        <a href="/staff">Staff sign in ↗</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer>
+      <a class="brand" href="/">
+        ✦ Church TV
+      </a>
+      <p>Your ministry. A little closer to home.</p>
+      <span>Managed app creation · No payment required to inquire</span>
+    </footer>
+  </body>
+</html>

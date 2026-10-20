@@ -1,0 +1,43 @@
+---
+interface Props {
+  name?: string;
+  primary?: string;
+  background?: string;
+  schedule?: string;
+}
+const {
+  name = "Your church, at home.",
+  primary = "#c8e5b3",
+  background = "#152a28",
+  schedule = "A place to connect. Wherever you are.",
+} = Astro.props;
+---
+
+<div class="tv-wrap">
+  <div class="tv" style={`--tv-primary:${primary};--tv-bg:${background}`}>
+    <div class="tv-top">
+      <span>
+        ✦ <span data-preview-name>{name}</span>
+      </span>
+      <small>HOME &nbsp; LIVE &nbsp; MESSAGES</small>
+    </div>
+    <div class="tv-landscape">
+      <div class="sun"></div>
+      <div class="hill one"></div>
+      <div class="hill two"></div>
+      <div class="tv-copy">
+        <span class="eyebrow">WELCOME HOME</span>
+        <h2 data-preview-title>{name}</h2>
+        <p data-preview-schedule>{schedule}</p>
+        <span class="tv-button">▶ Watch live</span>
+      </div>
+    </div>
+    <div class="tv-bottom">
+      <span>◉ &nbsp; Sunday service</span>
+      <span>▤ &nbsp; Recent messages</span>
+      <span>✦ &nbsp; Our community</span>
+    </div>
+  </div>
+  <div class="tv-stand"></div>
+  <p class="preview-label">ILLUSTRATIVE PREVIEW · No app has been generated</p>
+</div>
