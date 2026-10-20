@@ -2,6 +2,11 @@ import { z } from "zod";
 import { authDatabase } from "../../lib/server/db";
 import { endpoint, HttpError, json, readJson } from "../../lib/server/http";
 export const POST = endpoint(async (c) => {
+  if (!c.request.headers.get("content-type")?.includes("application/json"))
+    throw new HttpError(
+      400,
+      "Enable JavaScript or reload the sign-in page, then try again.",
+    );
   const input = z
     .object({
       email: z.string().email().max(254),

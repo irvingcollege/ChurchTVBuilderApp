@@ -18,7 +18,8 @@
     "test:live": "LOCAL_SUPABASE_E2E=1 playwright test tests/browser/live.spec.ts",
     "format": "prettier --write .",
     "bootstrap:staff": "node --env-file=.env scripts/bootstrap-staff.mjs",
-    "setup:local-env": "node scripts/local-env.mjs"
+    "setup:local-env": "node scripts/local-env.mjs",
+    "test:production": "npm run build && playwright test --config playwright.production.config.ts"
   },
   "dependencies": {
     "@astrojs/netlify": "^8.2.10",

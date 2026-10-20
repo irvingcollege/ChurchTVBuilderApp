@@ -81,6 +81,7 @@ npm run check       # ESLint, Astro/TypeScript, 43 unit/Postgres integration tes
 npx playwright install chromium
 npm run test:e2e    # public intake, mobile layout, staff redirect, unauthorized API checks
 npm run test:live   # opt-in real LOCAL Supabase end-to-end workflow; needs .env and services
+npm run test:production # compiled Netlify function: login JavaScript/CSP and safe POST fallback
 ```
 
 For an already installed Chromium in cloud, use `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium npm run test:e2e`. Browser tests start Astro if necessary. `test:live` refuses hosted Supabase: it creates disposable local Auth identities and fictional submissions, uploads a real PNG, verifies storage privacy, signs in, reviews notes/status, requests a simulated email, and runs a simulated build. It removes test identities from the allowlist and bans them afterward; it retains their audit history. Local test data remains for inspection.

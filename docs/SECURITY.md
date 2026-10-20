@@ -37,3 +37,7 @@ Future adapters: Roku BrightScript/SceneGraph, Android TV Kotlin/Media3/Gradle A
 Use a dedicated project and private bucket, configure a verified email sender/inbox, staff access policy, edge rate limits, Auth safeguards, alerting, backup/restore drills, and data retention/deletion procedures. Monitor pending notifications and orphan uploads. Keep contact information, private materials, signed links and server keys out of logs. Test revocation by deleting a staff allowlist row. Do not seed real projects with development users or sample churches. Follow dependency advisories and patch with regression checks. Never disable TLS, signatures, or checksums to resolve an install problem.
 
 This repository has no billing/payment flow. Pricing/invoicing can be added separately; intake consent is not a payment agreement.
+
+## Built-page browser checks
+
+Small client scripts must remain external (`vite.build.assetsInlineLimit: 0`) so the strict `script-src` policy permits them in production. Development-server browser tests alone do not catch script inlining in compiled pages. `npm run test:production` serves the actual compiled Netlify function locally and verifies that sign-in sends a JSON POST, shows an error on rejection and re-enables the button. It also verifies that, without JavaScript, the sign-in form uses POST rather than placing credentials in the URL. No real credentials are used by these tests.
